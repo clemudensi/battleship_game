@@ -13,7 +13,7 @@ interface Ship {
 
 const createGrid = (size: number) => Array(size).fill(null).map(() => Array(size).fill(0))
 
-const Board = () => {
+const BattleShipApp = () => {
   const BOARD_SIZE = 10;
   const defaultShips = [
     { type: ShipType.BATTLESHIP, size: 5, cord: [] },
@@ -39,13 +39,13 @@ const Board = () => {
 
         for (let i = 0; i < ship.size; i++) {
           if (horizontalAxis) {
-            if (xAxis + i >= 10) {
+            if (xAxis + i >= BOARD_SIZE) {
               fits = false;
               break;
             }
             shipCord.push([xAxis + i, yAxis]);
           } else {
-            if (yAxis + i >= 10) {
+            if (yAxis + i >= BOARD_SIZE) {
               fits = false;
               break;
             }
@@ -81,14 +81,14 @@ const Board = () => {
     if (remainingShips.length === 0) {
       setIsGameOver(true);
       gameOver = setTimeout(() => {
-        setMessage('Game completed')
+        isGameOver && setMessage('Game Over')
       }, 1500)
     }
 
     return () => {
       clearTimeout(gameOver)
     }
-  }, [ships]);
+  }, [ships, isGameOver]);
 
   const addShot = (x: number, y: number) => {
     if (isGameOver || shots.includes(`${x},${y}`)) return;
@@ -98,25 +98,27 @@ const Board = () => {
 
   /* Handles player shots */
   const handleShot = (x: number, y: number) => {
-    addShot(x, y);
-    let hit = false;
+    if (!isGameOver) {
+      addShot(x, y);
+      let hit = false;
 
-    let newShips = ships.map(ship => {
-      let newSquares = [...ship.cord];
-      let index = ship.cord.findIndex(([shipX, shipY]) => shipX === x && shipY === y);
-      if (index !== -1) {
-        setMessage('Successful hit')
-        hit = true;
-        newSquares.splice(index, 1);
-        if (newSquares.length === 0) {
-          setMessage(`You sank the ${ship.type}!`);
+      let newShips = ships.map(ship => {
+        let newSquares = [...ship.cord];
+        let index = ship.cord.findIndex(([shipX, shipY]) => shipX === x && shipY === y);
+        if (index !== -1) {
+          setMessage('Successful hit')
+          hit = true;
+          newSquares.splice(index, 1);
+          if (newSquares.length === 0) {
+            setMessage(`You sank the ${ship.type}!`);
+          }
         }
+        return { ...ship, cord: newSquares };
+      });
+      setShips(newShips);
+      if (!hit) {
+        setMessage('Miss!');
       }
-      return { ...ship, cord: newSquares };
-    });
-    setShips(newShips);
-    if (!hit) {
-      setMessage('Miss!');
     }
   };
 
@@ -127,11 +129,11 @@ const Board = () => {
         color = 'gray'
       }
       if (ship.type === ShipType.DESTROYER && ship.cord.some(([shipX, shipY]) => shipX === x && shipY === y)) {
-        color = '#2b85e2'
+        color = 'rgb(43, 133, 226)'
       }
     })
     if (shots.includes(`${x},${y}`)) {
-      color = '#ff380b';
+      color = 'rgb(255, 56, 11)';
     }
     return color
   };
@@ -147,12 +149,12 @@ const Board = () => {
   return (
     <div>
       <h1>Battleships Game</h1>
-      <p>
+      <div>
         <ul>
-          <li>5 hits to take down a battleship</li>
-          <li>4 hits to take down a destroyer</li>
+          <li>5 hits to take down a battleship (gray)</li>
+          <li>4 hits to take down a destroyer (blue)</li>
         </ul>
-      </p>
+      </div>
       <br />
       <table>
         <tbody>
@@ -162,23 +164,25 @@ const Board = () => {
               <td
                 key={columnIndex}
                 onClick={() => handleShot(rowIndex, columnIndex)}
+                // styling should be consistent with unit test selectors
                 style={{
                   backgroundColor: boxColor(rowIndex, columnIndex),
                   border: "1px solid black",
                   width: 40,
                   height: 40,
                 }}
-              ></td>
+                data-testid="square"
+              />
             ))}
           </tr>
         ))}
         </tbody>
       </table>
-      <p>{message}</p>
+      <p data-testid="message">{message}</p>
       <br />
       <button onClick={reset}>Reset</button>
     </div>
   );
 };
 
-export default Board;
+export default BattleShipApp;

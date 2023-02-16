@@ -1,4 +1,4 @@
-enum ShipType {
+export enum ShipType {
   BATTLESHIP = 'BATTLESHIP',
   DESTROYER = 'DESTROYER'
 }
@@ -7,6 +7,10 @@ interface Ship {
   cord: number[][];
   size: number;
   type: string;
+}
+
+interface PlayerInputDict {
+  [x: string]: number
 }
 
 class BattleShip {
@@ -27,7 +31,7 @@ class BattleShip {
     this.placeShips();
   }
 
-  createBoard(size){
+  createBoard(size: number){
     return Array(size).fill(null).map(() => Array(size).fill(0))
   }
 
@@ -86,7 +90,7 @@ class BattleShip {
 
   handleShot(cord: string) {
     const axis = cord.toUpperCase().split('');
-    const dictionary = this.playerInputConverter();
+    const dictionary: PlayerInputDict = this.playerInputConverter();
 
     const x = dictionary[axis[0]];
     const y = Number(axis[1])
@@ -118,7 +122,7 @@ class BattleShip {
   };
 
   playerInputConverter(){
-    const result = {};
+    const result: PlayerInputDict = {};
     const limit = 10;
 
     for (let i = 0; i < this.size; ++i){
